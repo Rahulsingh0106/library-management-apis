@@ -11,14 +11,14 @@ class UpdateBookRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     public function rules(): array
     {
         return [
-            'title' => 'sometimes|string|max:255',
-            'author' => 'sometimes|string|max:255',
+            'title' => 'required|string|max:255',
+            'author' => 'required|string|max:255',
         ];
     }
 }

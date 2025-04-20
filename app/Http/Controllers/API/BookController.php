@@ -8,63 +8,78 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use App\Http\Requests\StoreBookRequest;
 use App\Http\Requests\UpdateBookRequest;
+use Exception;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class BookController extends Controller
 {
-    public function index()
+    private function jsonResponse($status, $data = [], $message = '')
     {
-        $books = Cache::remember('books_list', 60, function () {
-            return Book::paginate(10);
-        });
         return response()->json([
-            "status" => 200,
-            "data" => $books,
-            "message" => "All books fetched successfully."
+            'status' => $status,
+            'data' => $data,
+            'message' => $message,
         ]);
     }
 
+    public function index()
+    {
+        try {
+            $books = Cache::remember('books_list', 60, fn() => Book::paginate(10));
+            return $this->jsonResponse(200, $books, "All books fetched successfully.");
+        } catch (Exception $th) {
+            return $this->jsonResponse(500, [], "Something went wrong! Please try again later.");
+        }
+    }
 
     public function store(StoreBookRequest $request)
     {
-        $validated = $request->validate([
-            'title' => 'required|string',
-            'author' => 'required|string',
-        ]);
-
-        $book = Book::create($validated);
-        Cache::forget('books_list'); // Invalidate cache
-
-        return response()->json([
-            'status' => 200,
-            'data' => $book,
-            'message' => "Book Created Successfully.",
-        ]);
+        try {
+            $book = Book::create($request->validated());
+            Cache::forget('books_list'); // Invalidate cache
+            return $this->jsonResponse(200, $book, "Book Created Successfully.");
+        } catch (Exception $th) {
+            return $this->jsonResponse(500, [], "Something went wrong! Please try later again.");
+        }
     }
 
-    public function show(Book $book)
+    public function show($id)
     {
-        return $book;
+        try {
+            $book = Book::findOrFail($id);
+            return $this->jsonResponse(200, $book, "Book fetched successfully.");
+        } catch (ModelNotFoundException $th) {
+            return $this->jsonResponse(400, [], "Book not found.");
+        } catch (Exception $th) {
+            return $this->jsonResponse(500, [], "Something went wrong! Please try again later.");
+        }
     }
 
-    public function update(UpdateBookRequest $request, Book $book)
+    public function update(UpdateBookRequest $request, $id)
     {
-        $book->update($request->validated());
-        Cache::forget('books_list');
-
-        return response()->json([
-            'status' => 200,
-            'data' => $book,
-            'message' => "Book updated Successfully.",
-        ]);
+        try {
+            $book = Book::findOrFail($id);
+            $book->update($request->validated());
+            Cache::forget('books_list');
+            return $this->jsonResponse(200, $book, "Book updated Successfully.");
+        } catch (ModelNotFoundException $th) {
+            return $this->jsonResponse(400, [], "Book not found.");
+        } catch (Exception $th) {
+            return $this->jsonResponse(500, [], "Something went wrong! Please try later again.");
+        }
     }
 
-    public function destroy(Book $book)
+    public function destroy($id)
     {
-        $book->delete();
-        return response()->json([
-            'status' => 200,
-            'data' => [],
-            'message' => "Book deleted Successfully.",
-        ]);
+        try {
+            $book = Book::findOrFail($id);
+            $book->delete();
+            Cache::forget('books_list');
+            return $this->jsonResponse(200, [], "Book deleted Successfully.");
+        } catch (ModelNotFoundException $th) {
+            return $this->jsonResponse(400, [], "Book not found.");
+        } catch (Exception $th) {
+            return $this->jsonResponse(500, [], "Something went wrong! Please try later again.");
+        }
     }
 }
