@@ -128,9 +128,7 @@ $user->assignRole('admin');
 ```json
 {
   "title": "The Alchemist",
-  "author": "Paulo Coelho",
-  "isbn": "123456789",
-  "total_copies": 5
+  "author": "Paulo Coelho"
 }
 ```
 
@@ -142,45 +140,6 @@ $user->assignRole('admin');
 GET /api/books
 ```
 
-No token required for viewing.
+In the root folder you will get two files Library Management.postman_environment.json and Library-Management-APIS.postman_collection.json 
 
----
-
-## ✅ Validation Notes
-
-- `total_copies` must be at least 1.
-- On update, if `total_copies` is reduced, `available_copies` will be adjusted safely to prevent exceeding limits.
-
----
-
-## 📁 Folder Structure (Highlights)
-
-```
-app/
-├── Http/
-│   └── Controllers/        → API logic
-├── Models/                 → Book, User
-├── Policies/
-routes/
-└── api.php                 → All API routes
-```
-
----
-
-## 📌 To Improve (Later)
-
-- Add pagination to books listing
-- Implement soft deletes
-- Add unit & feature tests
-- Add API documentation (Swagger/Postman collection)
-
----
-
-## 🧑‍💻 Author
-
-**Rahul Singh**  
-GitHub: [@Rahulsingh0106](https://github.com/Rahulsingh0106)
-
----
-
-Let me know if you want this as a `.md` file ready to commit into your repo — or I can generate a PR-style message for it too!
+Import this two files in your postman to test APIS
